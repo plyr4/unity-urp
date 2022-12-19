@@ -176,7 +176,11 @@ namespace UnityEngine.Rendering.Universal
             Camera camera = cameraData.camera;
 
             Rect pixelRect = cameraData.pixelRect;
-            float renderScale = cameraData.isSceneViewCamera ? 1f : cameraData.renderScale;
+
+            // fix: apply render scale in scene view
+            //  decal projectors will skew in scene without actual render scale
+            // float renderScale = cameraData.isSceneViewCamera ? 1f : cameraData.renderScale;
+            float renderScale = cameraData.renderScale;
             
             float scaledCameraWidth = (float)pixelRect.width * renderScale;
             float scaledCameraHeight = (float)pixelRect.height * renderScale;
@@ -242,7 +246,10 @@ namespace UnityEngine.Rendering.Universal
             cmd.SetGlobalVector(ShaderPropertyId.zBufferParams, zBufferParams);
             cmd.SetGlobalVector(ShaderPropertyId.orthoParams, orthoParams);
 
-            cmd.SetGlobalVector(ShaderPropertyId.screenSize, new Vector4(cameraWidth, cameraHeight, 1.0f / cameraWidth, 1.0f / cameraHeight));
+            // fix: apply scaled camera size
+            //  decal projectors will skew in scene without scaled camera size
+            // cmd.SetGlobalVector(ShaderPropertyId.screenSize, new Vector4(cameraWidth, cameraHeight, 1.0f / cameraWidth, 1.0f / cameraHeight));
+            cmd.SetGlobalVector(ShaderPropertyId.screenSize, new Vector4(scaledCameraWidth, scaledCameraHeight, 1.0f / scaledCameraWidth, 1.0f / scaledCameraHeight));
 
             //Set per camera matrices.
             SetCameraMatrices(cmd, ref cameraData, true);
